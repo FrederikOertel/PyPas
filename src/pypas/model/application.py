@@ -1,9 +1,11 @@
+"""Application model."""
 from dataclasses import dataclass
-
 
 
 @dataclass
 class Application:
+    """Application model."""
+
     AccessPermittedFrom: str
     AccessPermittedTo: str
     AllowExtendedAuthenticationRestrictions: bool

@@ -1,12 +1,19 @@
+"""SafeMember model class."""
 from dataclasses import dataclass
 from enum import Enum
 
+
 class SafeMemberType(Enum):
+    """Describes the type of a safe member."""
+
     User = 1
     Group = 2
 
+
 @dataclass
 class SafeMemberPermissions:
+    """Describes the permissions of a safe member."""
+
     useAccounts: bool
     retrieveAccounts: bool
     listAccounts: bool
@@ -30,8 +37,11 @@ class SafeMemberPermissions:
     requestsAuthorizationLevel1: bool
     requestsAuthorizationLevel2: bool
 
+
 @dataclass
 class SafeMember:
+    """Describes a safe member with their permissions."""
+
     safeUrlId: str
     safeName: str
     safeNumber: int
@@ -43,4 +53,3 @@ class SafeMember:
     isPredefinedUser: bool
     permissions: SafeMemberPermissions
     isReadOnly: bool
-

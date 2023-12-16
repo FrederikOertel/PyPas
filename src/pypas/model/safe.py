@@ -1,15 +1,19 @@
+"""Safe model""" ""
 from dataclasses import dataclass
+
 
 @dataclass
 class SafeCreator:
+    """Describes the creator of a safe."""
+
     id: str
     name: str
 
 
 @dataclass
 class Safe:
-    """Returned object from the Get Safe Details Endpoint
-    """
+    """Describes a safe with its properties and accounts."""
+
     safeUrlId: str
     safeName: str
     safeNumber: int
@@ -25,4 +29,3 @@ class Safe:
     lastModificationTime: int
     accounts: list
     isExiredMember: bool
-
