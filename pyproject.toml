@@ -52,7 +52,7 @@ Source = "https://github.com/FrederikOertel/PyPas/tree/main"
 Tracker = "https://github.com/FrederikOertel/PyPas/tree/main/issues"
 
 [tool.flit.module]
-name = "python_package"
+name = "pypas"
 
 [tool.bandit]
 exclude_dirs = ["build","dist","tests","scripts"]
