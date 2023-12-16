@@ -17,5 +17,5 @@ files:
 
   - "!.github/workflows/template-sync.yml"
   - "!.github/template-sync.yml"
-  - "!src/python_project"
+  - "!src/pypas"
   - "!tests/test_methods.py"
