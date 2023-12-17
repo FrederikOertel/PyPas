@@ -2,7 +2,7 @@ files:
   - ".gitignore"  # include
   - ".github"
   - ".vscode"
-  - "tests/conftest.py"
+  - "tests/test_ccp.py"
   - ".flake8"
   - ".pre-commit-config.yml"
   - ".pypirc"
