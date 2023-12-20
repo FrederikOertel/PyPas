@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+
+from pypas.api.safe_member_api import SafeMembers
 from .api.safe_api import Safes
 from .api.authentication_api import Authentication
 
@@ -13,6 +15,7 @@ class Vault:
     def __post_init__(self):
         self.Safes = Safes(self)
         self.Authentication = Authentication(self)
+        self.SafeMembers = SafeMembers(self)
 
     def get_request(self, url: str, params: dict = None) -> dict:
         """Make a GET request to the vault."""
