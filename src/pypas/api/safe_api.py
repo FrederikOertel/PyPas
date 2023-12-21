@@ -5,6 +5,32 @@ import urllib
 from pypas.utils import remove_none_values_from_dict
 
 
+def __parse_safe_from_cyberark_response(response: dict) -> Safe:
+    safe_creator = SafeCreator(**response["Creator"])
+    accounts = []
+    for account in response["accounts"]:
+        accounts.append(SafeAccount(**account))
+
+    safe = Safe(
+        safeUrlId=response["safeUrlId"],
+        safeName=response["safeName"],
+        safeNumber=response["safeNumber"],
+        description=response["description"],
+        location=response["location"],
+        creator=safe_creator,
+        olacEnabled=response["olacEnabled"],
+        managingCPM=response["managingCPM"],
+        numberOfVersionsRetention=response["numberOfVersionsRetention"],
+        numberOfDaysRetention=response["numberOfDaysRetention"],
+        autoPurgeEnabled=response["autoPurgeEnabled"],
+        creationTime=response["creationTime"],
+        lastModificationTime=response["lastModificationTime"],
+        accounts=accounts,
+        isExiredMember=response["isExiredMember"],
+    )
+    return safe
+
+
 class Safes:
     """Safes API endpoint"""
 
@@ -21,7 +47,9 @@ class Safes:
         includeAccounts: bool = False,
         extendedDetails: bool = True,
     ) -> List[Safe]:
-        """List all safes.
+        """This method returns a list of all Safes in the Vault that the user has permissions for.
+        The user who runs this web service must be a member of the Safes in the Vault that are returned in the list.
+
         Relevant CyberArk Documentation:
         https://docs.cyberark.com/PAS/12.6/en/Content/SDK/Safes%20Web%20Services%20-%20List%20Safes.htm
 
@@ -66,33 +94,13 @@ class Safes:
 
         safes = []
         for entry in response.json()["safes"]:
-            safe_creator = SafeCreator(**entry["Creator"])
-            accounts = []
-            for account in entry["accounts"]:
-                accounts.append(SafeAccount(**account))
-
-            safe = Safe(
-                safeUrlId=entry["safeUrlId"],
-                safeName=entry["safeName"],
-                safeNumber=entry["safeNumber"],
-                description=entry["description"],
-                location=entry["location"],
-                creator=safe_creator,
-                olacEnabled=entry["olacEnabled"],
-                managingCPM=entry["managingCPM"],
-                numberOfVersionsRetention=entry["numberOfVersionsRetention"],
-                numberOfDaysRetention=entry["numberOfDaysRetention"],
-                autoPurgeEnabled=entry["autoPurgeEnabled"],
-                creationTime=entry["creationTime"],
-                lastModificationTime=entry["lastModificationTime"],
-                accounts=accounts,
-                isExiredMember=entry["isExiredMember"],
-            )
+            safe = __parse_safe_from_cyberark_response(entry)
             safes.append(safe)
+
         return safes
 
     def get(self, safe_identifier: str) -> Safe:
-        """Get a single safe by its name.
+        """This method returns information about a specific Safe in the Vault.
 
         Relevant CyberArk Documentation:
         https://docs.cyberark.com/PAS/12.6/en/Content/SDK/Safes%20Web%20Services%20-%20Get%20Safes%20Details.htm
@@ -108,31 +116,10 @@ class Safes:
         request_url = f"{self.vault.base_url}PasswordVault/API/Safes/{safe_identifier}/"
 
         response = self.vault.get_request(request_url)
-        response.raise_for_status()
 
-        safe_creator = SafeCreator(**response.json()["Creator"])
+        safe = __parse_safe_from_cyberark_response(response.json())
 
-        accounts = []
-        for account in response.json()["accounts"]:
-            accounts.append(SafeAccount(**account))
-
-        return Safe(
-            safeUrlId=response.json()["safeUrlId"],
-            safeName=response.json()["safeName"],
-            safeNumber=response.json()["safeNumber"],
-            description=response.json()["description"],
-            location=response.json()["location"],
-            creator=safe_creator,
-            olacEnabled=response.json()["olacEnabled"],
-            managingCPM=response.json()["managingCPM"],
-            numberOfVersionsRetention=response.json()["numberOfVersionsRetention"],
-            numberOfDaysRetention=response.json()["numberOfDaysRetention"],
-            autoPurgeEnabled=response.json()["autoPurgeEnabled"],
-            creationTime=response.json()["creationTime"],
-            lastModificationTime=response.json()["lastModificationTime"],
-            accounts=accounts,
-            isExiredMember=response.json()["isExiredMember"],
-        )
+        return safe
 
     def create(
         self,
@@ -147,6 +134,9 @@ class Safes:
         """
         This method adds a new Safe to the Vault.
         The user who runs this web service must have Add Safes permission in the Vault.
+
+        Relevant CyberArk Documentation:
+        https://docs.cyberark.com/PAS/12.6/en/Content/WebServices/Add%20Safe.htm
 
         Args:
             name (str): Name of the new safe
@@ -193,63 +183,75 @@ class Safes:
 
         response = self.vault.post_request(request_url, body=body)
 
-        response.raise_for_status()
+        safe = __parse_safe_from_cyberark_response(response.json())
 
-        safe_creator = SafeCreator(**response.json()["Creator"])
-
-        accounts = []
-        for account in response.json()["accounts"]:
-            accounts.append(SafeAccount(**account))
-
-        return Safe(
-            safeUrlId=response.json()["safeUrlId"],
-            safeName=response.json()["safeName"],
-            safeNumber=response.json()["safeNumber"],
-            description=response.json()["description"],
-            location=response.json()["location"],
-            creator=safe_creator,
-            olacEnabled=response.json()["olacEnabled"],
-            managingCPM=response.json()["managingCPM"],
-            numberOfVersionsRetention=response.json()["numberOfVersionsRetention"],
-            numberOfDaysRetention=response.json()["numberOfDaysRetention"],
-            autoPurgeEnabled=response.json()["autoPurgeEnabled"],
-            creationTime=response.json()["creationTime"],
-            lastModificationTime=response.json()["lastModificationTime"],
-            accounts=accounts,
-            isExiredMember=response.json()["isExiredMember"],
-        )
+        return safe
 
     def update(
         self,
         safe_identifier: str,
-        new_name: str = None,
-        new_description: str = None,
-        new_location: str = None,
-        new_number_of_versions_retention: int = None,
-        new_number_of_days_retention: int = None,
-        new_managing_cpm: str = None,
-        new_olac_enabled: bool = False,
+        name: str = None,
+        description: str = None,
+        location: str = None,
+        number_of_versions_retention: int = None,
+        number_of_days_retention: int = None,
+        managing_cpm: str = None,
+        olac_enabled: bool = False,
     ) -> Safe:
-        """Create a new safe."""
+        """This method updates a single Safe in the Vault.
+        The user who runs this web service must have Manage Safes permissions in the
+        Vault and View Safe Members permissions in the Safe.
 
-        if new_number_of_days_retention and new_number_of_versions_retention:
+        Relevant CyberArk Documentation:
+        https://docs.cyberark.com/PAS/12.6/en/Content/WebServices/Update%20Safe.htm
+
+        Args:
+            safe_identifier (str): safeUrLId or safeName
+
+            name (str, optional): The unique name of the Safe. Defaults to None.
+
+            description (str, optional): The description of the Safe. Defaults to None.
+
+            location (str, optional): The location of the Safe in the Vault. Defaults to None.
+
+            number_of_versions_retention (int, optional): The number of retained versions of
+            every password that is stored in the Safe. Defaults to None.
+
+            number_of_days_retention (int, optional): The number of days that password versions are saved in the Safe.
+            Defaults to None.
+
+            managing_cpm (str, optional): The name of the CPM user who will manage the new Safe. Defaults to None.
+
+            olac_enabled (bool, optional): Whether to enable Object Level Access Control for the new Safe.
+            If you set the default value to True, you cannot revert to False.
+            Defaults to False.
+
+        Raises:
+            ValueError: Only one of number_of_days_retention and number_of_versions_retention can be set.
+            ValueError: Either number_of_days_retention or number_of_versions_retention must be set.
+
+        Returns:
+            Safe: The updated Safe
+        """
+
+        if number_of_days_retention and number_of_versions_retention:
             raise ValueError("Only one of number_of_days_retention and number_of_versions_retention can be set.")
-        if not new_number_of_days_retention and not new_number_of_versions_retention:
+        if not number_of_days_retention and not number_of_versions_retention:
             raise ValueError("Either number_of_days_retention or number_of_versions_retention must be set.")
 
         pre_update_safe = self.get(safe_identifier)
 
-        updated_name = new_name if new_name else pre_update_safe.safeName
-        updated_description = new_description if new_description else pre_update_safe.description
-        updated_location = new_location if new_location else pre_update_safe.location
-        updated_managing_cpm = new_managing_cpm if new_managing_cpm else pre_update_safe.managingCPM
-        updated_olac_enabled = new_olac_enabled if new_olac_enabled else pre_update_safe.olacEnabled
+        updated_name = name if name else pre_update_safe.safeName
+        updated_description = description if description else pre_update_safe.description
+        updated_location = location if location else pre_update_safe.location
+        updated_managing_cpm = managing_cpm if managing_cpm else pre_update_safe.managingCPM
+        updated_olac_enabled = olac_enabled if olac_enabled else pre_update_safe.olacEnabled
 
-        if new_number_of_days_retention:
-            updated_number_of_days_retention = new_number_of_days_retention
+        if number_of_days_retention:
+            updated_number_of_days_retention = number_of_days_retention
             updated_number_of_versions_retention = None
-        elif new_number_of_versions_retention:
-            updated_number_of_versions_retention = new_number_of_versions_retention
+        elif number_of_versions_retention:
+            updated_number_of_versions_retention = number_of_versions_retention
             updated_number_of_days_retention = None
         else:
             updated_number_of_days_retention = pre_update_safe.numberOfDaysRetention
@@ -269,34 +271,16 @@ class Safes:
 
         response = self.vault.put_request(request_url, body=body)
 
-        response.raise_for_status()
+        safe = __parse_safe_from_cyberark_response(response.json())
 
-        safe_creator = SafeCreator(**response.json()["Creator"])
-
-        accounts = []
-        for account in response.json()["accounts"]:
-            accounts.append(SafeAccount(**account))
-
-        return Safe(
-            safeUrlId=response.json()["safeUrlId"],
-            safeName=response.json()["safeName"],
-            safeNumber=response.json()["safeNumber"],
-            description=response.json()["description"],
-            location=response.json()["location"],
-            creator=safe_creator,
-            olacEnabled=response.json()["olacEnabled"],
-            managingCPM=response.json()["managingCPM"],
-            numberOfVersionsRetention=response.json()["numberOfVersionsRetention"],
-            numberOfDaysRetention=response.json()["numberOfDaysRetention"],
-            autoPurgeEnabled=response.json()["autoPurgeEnabled"],
-            creationTime=response.json()["creationTime"],
-            lastModificationTime=response.json()["lastModificationTime"],
-            accounts=accounts,
-            isExiredMember=response.json()["isExiredMember"],
-        )
+        return safe
 
     def delete(self, safe_identifier: str):
-        """Delete a safe.
+        """This method deletes a Safe from the Vault.
+        The user who runs this web service must have Manage Safe permissions in the Safe.
+
+        Relevant CyberArk Documentation:
+        https://docs.cyberark.com/PAS/12.6/en/Content/WebServices/Delete%20Safe.htm
 
         Args:
             safe_identifier (str): safeUrlId or safeName (identifier of the safe)
@@ -304,6 +288,4 @@ class Safes:
 
         request_url = f"{self.vault.base_url}PasswordVault/API/Safes/{safe_identifier}"
 
-        response = self.vault.delete_request(request_url)
-
-        response.raise_for_status()
+        self.vault.delete_request(request_url)
