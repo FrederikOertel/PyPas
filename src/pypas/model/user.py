@@ -24,22 +24,41 @@ class UserAuthenticationMethod(Enum):
 class UserInterface(Enum):
     """Describes possible interfaces for a user."""
 
-    PIMSU = 1
-    PSM = 2
-    PSMP = 3
-    PVWA = 4
-    WINCLIENT = 5
-    PTA = 6
-    PACLI = 7
-    HTTPGW = 8
-    EVD = 9
-    PIMSu = 10
-    AIMApp = 11
-    CPM = 12
-    PVWAApp = 13
+    AIMApp = 1
+    AppPrv = 2
+    CPM = 3
+    EVD = 4
+    GUI = 5
+    HTTPGW = 6
+    NAPI = 7
+    PACLI = 8
+    PAPI = 9
+    PIMSU = 10
+    PIMSu = 11
+    PSM = 12
+    PSMP = 13
     PSMApp = 14
-    AppPrv = 15
-    PSMPApp = 17
+    PSMPApp = 15
+    PTA = 16
+    PVWA = 17
+    PVWAApp = 18
+    XAPI = 19
+    WINCLIENT = 20
+
+
+class UserVaultAuthorization(Enum):
+    """The user permissions."""
+
+    AddSafes = 1
+    AuditUsers = 2
+    AddUpdateUsers = 3
+    ResetUsersPasswords = 4
+    ActivateUsers = 5
+    AddNetworkAreas = 6
+    ManageDirectoryMapping = 7
+    ManageServerFileCategories = 8
+    BackupAllSafes = 9
+    RestoreAllSafes = 10
 
 
 @dataclass
@@ -81,15 +100,15 @@ class UserPersonalDetails:
     firstName: str
     middleName: str
     lastName: str
-    street: str
-    city: str
-    state: str
-    zip: str
-    country: str
-    title: str
-    organization: str
-    department: str
-    profession: str
+    street: str = None
+    city: str = None
+    state: str = None
+    zip: str = None
+    country: str = None
+    title: str = None
+    organization: str = None
+    department: str = None
+    profession: str = None
 
 
 @dataclass
@@ -112,18 +131,19 @@ class User:
     componentUser: bool
     vaultAuthorization: List[str]
     location: str
-    enableUser: bool
-    changePassOnNextLogon: bool
-    expiryDate: int
-    suspended: bool
-    lastSuccessfulLoginDate: int
-    unAuthorizedInterfaces: List[UserInterface]
-    authenticationMethod: List[UserAuthenticationMethod]
-    passwordNeverExpires: bool
-    distinguishedName: str
-    description: str
-    businessAddress: UserBusinessAddress
-    internet: UserInternet
-    phones: UserPhones
-    personalDetails: UserPersonalDetails
-    groupsMembership: List[UserGroupsMembership]
+    enableUser: bool = None
+    changePassOnNextLogon: bool = None
+    expiryDate: int = None
+    suspended: bool = None
+    lastSuccessfulLoginDate: int = None
+    authorizedInterfaces: List[UserInterface] = None
+    authenticationMethod: List[UserAuthenticationMethod] = None
+    passwordNeverExpires: bool = None
+    distinguishedName: str = None
+    description: str = None
+    businessAddress: UserBusinessAddress = None
+    internet: UserInternet = None
+    phones: UserPhones = None
+    personalDetails: UserPersonalDetails = None
+    groupsMembership: List[UserGroupsMembership] = None
+    userDN: str = None
